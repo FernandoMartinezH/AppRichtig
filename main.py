@@ -849,17 +849,14 @@ def write_unified_csv(results, pdf_path):
 
     with open(unified_path, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f, delimiter=";")
+         
         w.writerow([
-            "PDF-Seite","Seitentyp","Doppelseite/Einzelseite",
-            "Katalogseite-Fokus", "Seite (L/R/E)",
-            "Zusammenfassung_Bilder (%)", "Zusammenfassung_Text (%)", "Zusammenfassung_Restflaeche (%)",
-            "Nr","Bild","Clip-Breite (cm)","Clip-Hoehe (cm)","Clip-Fläche (cm²)","Farbe",
-            "Auf Seite (%)","Sichtbar (%)",
-            "Auf S.Links (%)","Auf S.Links (%) Sichtbar",
-            "Auf S.Rechts (%)","Auf S.Rechts (%) Sichtbar",
-            "Produkt-Label","Produkt-Nr","Varianten-Label","Varianten",
-            "Artikelnummern", "Text_Vorschau", "Textblock_Flaeche (%)"
+            "Text_Vorschau", "Farbe", "Artikelnummern", "Varianten-Label", "Produkt-Label", "Produkt-Nr", 
+            "Katalogseite-Fokus", "Bild", "Clip-Breite (cm)", "Clip-Hoehe (cm)", "Clip-Fläche (cm²)", 
+            "Auf Seite (%)", "Sichtbar (%)", "Auf S.Links (%)", "Auf S.Links (%) Sichtbar", 
+            "Auf S.Rechts (%)", "Auf S.Rechts (%) Sichtbar", "Textblock_Flaeche (%)"
         ])
+
 
         for r in results:
             kat_l, kat_r = r["katalog_links"], r["katalog_rechts"]
