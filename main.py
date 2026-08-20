@@ -346,8 +346,10 @@ def find_label_pair(product_labels, variant_labels, img_rect, max_dist=REF_DIST)
     return prod, v_best
 
 def find_products_for_nums(products, nums):
-    """Groups processed blocks matching requested reference criteria sequences."""
-    return [p for p in products if p["prod_num"] in nums]
+    """Gruppiert verarbeitete Textblöcke basierend auf den Sequenz-Referenzkriterien (Multi-Artikel)."""
+    # Überprüft, ob es eine Schnittmenge zwischen den gesuchten Nummern und den gefundenen Nummern gibt
+    return [p for p in products if any(n in p.get("prod_nums", []) for n in nums)]
+
 
 def resolve_articles(matched_products, variant_letters):
     """Cross-references structural descriptive tables to pair unique SKU targets."""
