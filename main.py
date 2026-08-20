@@ -888,26 +888,28 @@ def write_unified_csv(results, pdf_path):
                             if detected_color is None:
                                 detected_color = ""
 
+                        # STRATEGISCHES REALIGNMENT: MATCHED JETZT DEINE SPEZIFISCHE SPALTENSTRUKTUR (SCHRITT 1)
                         w.writerow([
-                            kat_l,
-                            b["name"],
-                            b["vis_breite_cm"],
-                            b["vis_hoehe_cm"],
-                            b["vis_area_cm2"], 
-                            detected_color,  
-                            b["clipped_pct"],
-                            b["visible_pct"],
-                            b["pct_left"],
-                            b["visible_pct_left"],
-                            b["pct_right"] if b["pct_right"] is not None else "",
-                            b["visible_pct_right"] if b["visible_pct_right"] is not None else "",
-                            b["produkt_nr_label"],
-                            p_nr,
-                            b["variant_label"],
-                            art_nr,
-                            b["text_vorschau"],
-                            b.get("text_block_pct", 0.0)
+                            b["text_vorschau"],                                  # Text_Vorschau
+                            detected_color,                                      # Farbe
+                            art_nr,                                              # Artikelnummern
+                            b["variant_label"],                                  # Varianten-Label
+                            b["produkt_nr_label"],                               # Produkt-Label
+                            p_nr,                                                # Produkt-Nr
+                            kat_l,                                               # Katalogseite-Fokus
+                            b["name"],                                           # Bild
+                            b["vis_breite_cm"],                                  # Clip-Breite (cm)
+                            b["vis_hoehe_cm"],                                   # Clip-Hoehe (cm)
+                            b["vis_area_cm2"],                                   # Clip-Fläche (cm²)
+                            b["clipped_pct"],                                    # Auf Seite (%)
+                            b["visible_pct"],                                    # Sichtbar (%)
+                            b["pct_left"],                                       # Auf S.Links (%)
+                            b["visible_pct_left"],                               # Auf S.Links (%) Sichtbar
+                            b["pct_right"] if b["pct_right"] is not None else "",# Auf S.Rechts (%)
+                            b["visible_pct_right"] if b["visible_pct_right"] is not None else "", # Auf S.Rechts (%) Sichtbar
+                            b.get("text_block_pct", 0.0)                         # Textblock_Flaeche (%)
                         ])
+
 
                 else:
                     w.writerow([
@@ -940,26 +942,28 @@ def write_unified_csv(results, pdf_path):
                             if detected_color is None:
                                 detected_color = ""
 
+                        # STRATEGISCHES REALIGNMENT: MATCHED JETZT DEINE SPEZIFISCHE SPALTENSTRUKTUR (SCHRITT 1)
                         w.writerow([
-                            kat_r,
-                            b["name"],
-                            b["vis_breite_cm"],
-                            b["vis_hoehe_cm"],
-                            b["vis_area_cm2"], 
-                            detected_color,  
-                            b["clipped_pct"],
-                            b["visible_pct"],
-                            b["pct_left"],
-                            b["visible_pct_left"],
-                            b["pct_right"],
-                            b["visible_pct_right"],
-                            b["produkt_nr_label"],
-                            p_nr,
-                            b["variant_label"],
-                            art_nr,
-                            b["text_vorschau"],
-                            b.get("text_block_pct", 0.0)
+                            b["text_vorschau"],                                  # Text_Vorschau
+                            detected_color,                                      # Farbe
+                            art_nr,                                              # Artikelnummern
+                            b["variant_label"],                                  # Varianten-Label
+                            b["produkt_nr_label"],                               # Produkt-Label
+                            p_nr,                                                # Produkt-Nr
+                            kat_r,                                               # Katalogseite-Fokus
+                            b["name"],                                           # Bild
+                            b["vis_breite_cm"],                                  # Clip-Breite (cm)
+                            b["vis_hoehe_cm"],                                   # Clip-Hoehe (cm)
+                            b["vis_area_cm2"],                                   # Clip-Fläche (cm²)
+                            b["clipped_pct"],                                    # Auf Seite (%)
+                            b["visible_pct"],                                    # Sichtbar (%)
+                            b["pct_left"],                                       # Auf S.Links (%)
+                            b["visible_pct_left"],                               # Auf S.Links (%) Sichtbar
+                            b["pct_right"],                                      # Auf S.Rechts (%)
+                            b["visible_pct_right"],                              # Auf S.Rechts (%) Sichtbar
+                            b.get("text_block_pct", 0.0)                         # Textblock_Flaeche (%)
                         ])
+
 
                 else:
                     w.writerow([
@@ -992,26 +996,28 @@ def write_unified_csv(results, pdf_path):
                             if detected_color is None:
                                 detected_color = ""
 
+                        # STRATEGISCHES REALIGNMENT: MATCHED JETZT DEINE SPEZIFISCHE SPALTENSTRUKTUR (SCHRITT 1)
                         w.writerow([
-                            kat_l,
-                            b["name"],
-                            b["vis_breite_cm"],
-                            b["vis_hoehe_cm"],
-                            b["vis_area_cm2"], 
-                            detected_color,  
-                            b["clipped_pct"],
-                            b["visible_pct"],
-                            b["pct_left"],
-                            b["visible_pct_left"],
-                            "",
-                            "",
-                            b["produkt_nr_label"],
-                            p_nr,
-                            b["variant_label"],
-                            art_nr,
-                            b["text_vorschau"],
-                            b.get("text_block_pct", 0.0)
+                            b["text_vorschau"],                                  # Text_Vorschau
+                            detected_color,                                      # Farbe
+                            art_nr,                                              # Artikelnummern
+                            b["variant_label"],                                  # Varianten-Label
+                            b["produkt_nr_label"],                               # Produkt-Label
+                            p_nr,                                                # Produkt-Nr
+                            kat_l,                                               # Katalogseite-Fokus
+                            b["name"],                                           # Bild
+                            b["vis_breite_cm"],                                  # Clip-Breite (cm)
+                            b["vis_hoehe_cm"],                                   # Clip-Hoehe (cm)
+                            b["vis_area_cm2"],                                   # Clip-Fläche (cm²)
+                            b["clipped_pct"],                                    # Auf Seite (%)
+                            b["visible_pct"],                                    # Sichtbar (%)
+                            b["pct_left"],                                       # Auf S.Links (%)
+                            b["visible_pct_left"],                               # Auf S.Links (%) Sichtbar
+                            "",                                                  # Auf S.Rechts (%)
+                            "",                                                  # Auf S.Rechts (%) Sichtbar
+                            b.get("text_block_pct", 0.0)                         # Textblock_Flaeche (%)
                         ])
+
 
                 else:
                     w.writerow([
@@ -1125,39 +1131,45 @@ def main_web():
                     # MOSTRAR LA TABLA INTERACTIVA CORREGIDA (Sin prefijo "de:")
                                         # MOSTRAR LA TABLA INTERACTIVA ACTUALIZADA AL ESTÁNDAR STREAMLIT ACTUAL
                                         # PASO 1 CORREGIDO: Configuración visual simplificada para el usuario en la App
+                                        # STEP 1 REALIGNMENT: STRATEGISCHE ANPASSUNG AN DIE NEUE KAUFMÄNNISCHE SPALTENSTRUKTUR
                     st.dataframe(
                         df_preview, 
                         column_config={
-                            "Katalogseite-Fokus": st.column_config.NumberColumn("Katalogseite", format="%d"),
+                            "Text_Vorschau": st.column_config.TextColumn("Text-Vorschau (ProduktN)", width="medium"),
+                            "Farbe": st.column_config.TextColumn("Farbe (FarbN)"),
+                            "Artikelnummern": st.column_config.TextColumn("Bestell-Nr (SKU)"),
+                            "Varianten-Label": st.column_config.TextColumn("Varianten-Label"),
+                            "Produkt-Label": st.column_config.TextColumn("Produkt-Label"),
+                            "Produkt-Nr": st.column_config.TextColumn("Produkt-Nr"),
+                            "Katalogseite-Fokus": st.column_config.NumberColumn("Katalogseite (PS)", format="%d"),
                             "Bild": st.column_config.TextColumn("Bild / Element ID"),
                             "Clip-Breite (cm)": st.column_config.NumberColumn("Clip-Breite (cm)", format="%.2f"),
                             "Clip-Hoehe (cm)": st.column_config.NumberColumn("Clip-Höhe (cm)", format="%.2f"),
                             "Clip-Fläche (cm²)": st.column_config.NumberColumn("Clip-Fläche (cm²)", format="%.2f"),
-                            "Farbe": st.column_config.TextColumn("Farbe (FarbN)"),
                             "Auf Seite (%)": st.column_config.NumberColumn("Auf Seite (%)", format="%.1f"),
                             "Sichtbar (%)": st.column_config.NumberColumn("Sichtbar (%)", format="%.1f"),
-                            "Produkt-Label": st.column_config.TextColumn("Produkt-Label"),
-                            "Produkt-Nr": st.column_config.TextColumn("Produkt-Nr"),
-                            "Varianten-Label": st.column_config.TextColumn("Varianten-Label"),
-                            "Artikelnummern": st.column_config.TextColumn("Bestell-Nr (SKU)"),
-                            "Text_Vorschau": st.column_config.TextColumn("Text-Vorschau", width="medium"),
+                            "Auf S.Links (%)": st.column_config.NumberColumn("Auf S.Links (%)", format="%.1f"),
+                            "Auf S.Links (%) Sichtbar": st.column_config.NumberColumn("Sichtbar Links (%)", format="%.1f"),
+                            "Auf S.Rechts (%)": st.column_config.NumberColumn("Auf S.Rechts (%)", format="%.1f"),
+                            "Auf S.Rechts (%) Sichtbar": st.column_config.NumberColumn("Sichtbar Rechts (%)", format="%.1f"),
                             "Textblock_Flaeche (%)": st.column_config.NumberColumn("Text (%)", format="%.1f")
                         },
                         width="stretch"  
                     )
 
-
                     st.write("---")
                     
-                    # 2. EL CLON PROTEGIDO SE CREA Y SOBREESCRIBE DESPUÉS (Afecta solo al archivo de descarga)
+                    # 2. DER GESCHÜTZTE EXCEL-KLON WIRD GENERIERT (SYSTEMINTEGRITÄT FÜR EUROPA-DE)
                     df_excel = df_preview.copy()
+                    
+                    # Aktualisierte Matrix kritischer Spalten zur permanenten Unterdrückung von Excel-Datumsfehlern
                     problematic_cols = [
-                        'Zusammenfassung_Text (%)', 'Zusammenfassung_Restflaeche (%)',
                         'Clip-Breite (cm)', 'Clip-Hoehe (cm)', 'Clip-Fläche (cm²)', 
                         'Farbe', 'Auf Seite (%)', 'Sichtbar (%)', 'Auf S.Links (%)', 
                         'Auf S.Links (%) Sichtbar', 'Auf S.Rechts (%)', 'Auf S.Rechts (%) Sichtbar',
-                        'Textblock_Flaeche (%)', 'Doppelseite/Einzelseite'
+                        'Textblock_Flaeche (%)'
                     ]
+
                         
                     for col in problematic_cols:
                         if col in df_excel.columns:
