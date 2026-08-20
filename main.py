@@ -1124,19 +1124,28 @@ def main_web():
                     
                     # MOSTRAR LA TABLA INTERACTIVA CORREGIDA (Sin prefijo "de:")
                                         # MOSTRAR LA TABLA INTERACTIVA ACTUALIZADA AL ESTÁNDAR STREAMLIT ACTUAL
+                                        # PASO 1 CORREGIDO: Configuración visual simplificada para el usuario en la App
                     st.dataframe(
                         df_preview, 
                         column_config={
+                            "Katalogseite-Fokus": st.column_config.NumberColumn("Katalogseite", format="%d"),
+                            "Bild": st.column_config.TextColumn("Bild / Element ID"),
                             "Clip-Breite (cm)": st.column_config.NumberColumn("Clip-Breite (cm)", format="%.2f"),
                             "Clip-Hoehe (cm)": st.column_config.NumberColumn("Clip-Höhe (cm)", format="%.2f"),
                             "Clip-Fläche (cm²)": st.column_config.NumberColumn("Clip-Fläche (cm²)", format="%.2f"),
-                            "Zusammenfassung_Bilder (%)": st.column_config.NumberColumn("Bilder (%)", format="%.1f"),
-                            "Zusammenfassung_Text (%)": st.column_config.NumberColumn("Text (%)", format="%.1f"),
-                            "Zusammenfassung_Restflaeche (%)": st.column_config.NumberColumn("Restfläche (%)", format="%.1f"),
-                            "Sichtbar (%)": st.column_config.NumberColumn("Sichtbar (%)", format="%.1f")
+                            "Farbe": st.column_config.TextColumn("Farbe (FarbN)"),
+                            "Auf Seite (%)": st.column_config.NumberColumn("Auf Seite (%)", format="%.1f"),
+                            "Sichtbar (%)": st.column_config.NumberColumn("Sichtbar (%)", format="%.1f"),
+                            "Produkt-Label": st.column_config.TextColumn("Produkt-Label"),
+                            "Produkt-Nr": st.column_config.TextColumn("Produkt-Nr"),
+                            "Varianten-Label": st.column_config.TextColumn("Varianten-Label"),
+                            "Artikelnummern": st.column_config.TextColumn("Bestell-Nr (SKU)"),
+                            "Text_Vorschau": st.column_config.TextColumn("Text-Vorschau", width="medium"),
+                            "Textblock_Flaeche (%)": st.column_config.NumberColumn("Text (%)", format="%.1f")
                         },
                         width="stretch"  
                     )
+
 
                     st.write("---")
                     
