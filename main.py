@@ -243,7 +243,7 @@ def collect_label_spans(spans):
 
 
 def extract_product_blocks(page):
-    """Processes paragraph groups to parse commercial codes, lists, and short copy snapshots."""
+    """Verarbeitet Textblöcke zur präzisen Erfassung ALLER Artikelnummern und Text-Snapshots (Multi-Artikel)."""
     blocks = page.get_text("dict")["blocks"]
     products = []
     page_area = page.rect.width * page.rect.height
@@ -270,26 +270,36 @@ def extract_product_blocks(page):
             letter = m.group(3)
             variant_map[art] = letter
 
-        first_token = text.strip().split()[0] if text.strip() else ""
-        prod_num = None
-        m = re.match(r"^(\d{1,2})", first_token)
-        if m: prod_num = int(m.group(1))
 
-        # Mantenemos las 6 palabras originales para que tu interfaz visual no cambie
+        # SYSTEM-UPGRADE: Findet ALLE Produkt-Ziffern im Textblock (Multi-Artikel-Unterstützung)
+        prod_nums_found = []
+        all_tokens = text.strip().split()
+        for token in all_tokens:
+            token_clean = token.strip("().,:-")
+            if token_clean.isdigit() and len(token_clean) <= 2:
+                prod_nums_found.append(int(token_clean))
+        
+        # Falls keine Ziffern isoliert wurden, suchen wir per Regex nach Nummern am Satzanfang
+        if not prod_nums_found:
+            m_all = re.findall(r"\b(\d{1,2})\b", text)
+            prod_nums_found = [int(n) for n in m_all] if m_all else []
+
         words = text.strip().split()
         preview_text = " ".join(words[:6]) if words else ""
 
         products.append({
             "rect": r,
-            "text": text,                         # <-- Guardamos el párrafo original entero
-            "text_completo": text.strip(),         # <-- NUEVO: Aseguramos el bloque completo para el color
+            "text": text,
+            "text_completo": text.strip(),
             "articles": articles_all,
             "variant_map": variant_map,
-            "prod_num": prod_num,
+            "prod_nums": prod_nums_found,  # Upgrade: Liste statt einzelnem Integer
+            "prod_num": prod_nums_found[0] if prod_nums_found else None, # Abwärtskompatibilität
             "preview": preview_text,
             "text_block_pct": text_block_pct 
         })
     return products
+
 
 
 
