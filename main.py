@@ -889,18 +889,26 @@ def write_unified_csv(results, pdf_path):
                                 detected_color = ""
 
                         w.writerow([
-                            r["seite"], typ, ds, kat_l, "L",
-                            r["bild_links_pct"], r["text_links_pct"], r["rest_links_pct"],
-                            b["index"], b["name"], b["vis_breite_cm"], b["vis_hoehe_cm"], b["vis_area_cm2"], 
+                            kat_l,
+                            b["name"],
+                            b["vis_breite_cm"],
+                            b["vis_hoehe_cm"],
+                            b["vis_area_cm2"], 
                             detected_color,  
-                            b["clipped_pct"], b["visible_pct"],
-                            b["pct_left"], b["visible_pct_left"],
+                            b["clipped_pct"],
+                            b["visible_pct"],
+                            b["pct_left"],
+                            b["visible_pct_left"],
                             b["pct_right"] if b["pct_right"] is not None else "",
                             b["visible_pct_right"] if b["visible_pct_right"] is not None else "",
-                            b["produkt_nr_label"], p_nr,
-                            b["variant_label"], b["variants"],
-                            art_nr, b["text_vorschau"], b.get("text_block_pct", 0.0)
+                            b["produkt_nr_label"],
+                            p_nr,
+                            b["variant_label"],
+                            art_nr,
+                            b["text_vorschau"],
+                            b.get("text_block_pct", 0.0)
                         ])
+
                 else:
                     w.writerow([
                         r["seite"], typ, ds, kat_l, "L",
@@ -933,17 +941,26 @@ def write_unified_csv(results, pdf_path):
                                 detected_color = ""
 
                         w.writerow([
-                            r["seite"], typ, ds, kat_r, "R",
-                            r["bild_rechts_pct"], r["text_rechts_pct"], r["rest_rechts_pct"],
-                            b["index"], b["name"], b["vis_breite_cm"], b["vis_hoehe_cm"], b["vis_area_cm2"], 
+                            kat_r,
+                            b["name"],
+                            b["vis_breite_cm"],
+                            b["vis_hoehe_cm"],
+                            b["vis_area_cm2"], 
                             detected_color,  
-                            b["clipped_pct"], b["visible_pct"],
-                            b["pct_left"], b["visible_pct_left"],
-                            b["pct_right"], b["visible_pct_right"],
-                            b["produkt_nr_label"], p_nr,
-                            b["variant_label"], b["variants"],
-                            art_nr, b["text_vorschau"], b.get("text_block_pct", 0.0)
+                            b["clipped_pct"],
+                            b["visible_pct"],
+                            b["pct_left"],
+                            b["visible_pct_left"],
+                            b["pct_right"],
+                            b["visible_pct_right"],
+                            b["produkt_nr_label"],
+                            p_nr,
+                            b["variant_label"],
+                            art_nr,
+                            b["text_vorschau"],
+                            b.get("text_block_pct", 0.0)
                         ])
+
                 else:
                     w.writerow([
                         r["seite"], typ, ds, kat_r, "R",
@@ -976,17 +993,26 @@ def write_unified_csv(results, pdf_path):
                                 detected_color = ""
 
                         w.writerow([
-                            r["seite"], typ, ds, kat_l, "E",
-                            r["bild_links_pct"], r["text_links_pct"], r["rest_links_pct"],
-                            b["index"], b["name"], b["vis_breite_cm"], b["vis_hoehe_cm"], b["vis_area_cm2"], 
+                            kat_l,
+                            b["name"],
+                            b["vis_breite_cm"],
+                            b["vis_hoehe_cm"],
+                            b["vis_area_cm2"], 
                             detected_color,  
-                            b["clipped_pct"], b["visible_pct"],
-                            b["pct_left"], b["visible_pct_left"],
-                            "", "",
-                            b["produkt_nr_label"], p_nr,
-                            b["variant_label"], b["variants"],
-                            art_nr, b["text_vorschau"], b.get("text_block_pct", 0.0)
+                            b["clipped_pct"],
+                            b["visible_pct"],
+                            b["pct_left"],
+                            b["visible_pct_left"],
+                            "",
+                            "",
+                            b["produkt_nr_label"],
+                            p_nr,
+                            b["variant_label"],
+                            art_nr,
+                            b["text_vorschau"],
+                            b.get("text_block_pct", 0.0)
                         ])
+
                 else:
                     w.writerow([
                         r["seite"], typ, ds, kat_l, "E",
