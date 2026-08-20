@@ -1103,12 +1103,8 @@ def main_web():
                 "🔍 Katalog-Prozessor", 
                 "📈 Effizienz- & Impact-Analyse"
             ])
+        
             
-            # --- REITER 1: DATA PREVIEW & CONTROLLED EXCEL CSV EXPORT ---
-            if st.button("🔄 System-Cache leeren"):
-                st.cache_data.clear()
-                st.cache_resource.clear()
-                st.success("Cache erfolgreich gelöscht! Bitte lade die Datei neu hoch.")
 
             with tab_prozess:
                 if os.path.exists(unified_path):
