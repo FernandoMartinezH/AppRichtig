@@ -1167,28 +1167,29 @@ def main_web():
                     st.markdown("### Vorschau der extrahierten Daten")
                     st.write("Bitte die generierten Zeilen und Spalten vor dem Download überprüfen:")
                     
-                    # 1. LEER EL CSV ORIGINAL (Contiene los números puros)
+                                        # 1. LEER EL CSV ORIGINAL (Contiene los números puros)
                     df_raw = pd.read_csv(unified_path, sep=";", encoding="utf-8-sig")
                     
                     # =========================================================================
-                    # SYSTEM-UPGRADE: ZEILEN-REFACTORING (1 ZEILE = 1 SKU) FÜR DYNAMICS 365
+                    # SYSTEM-UPGRADE PROTEGIDO: ZEILEN-REFACTORING (1 ZEILE = 1 SKU)
                     # =========================================================================
-                    # Falls "Artikelnummern" mehrere SKUs mit Komma enthält, splitten wir sie in Listen
-                    df_raw['Artikelnummern'] = df_raw['Artikelnummern'].astype(str).apply(
+                    # Reemplazamos valores nulos por texto vacío para evitar el error de tipo 'float'
+                    df_raw['Artikelnummern'] = df_raw['Artikelnummern'].fillna("").astype(str)
+                    
+                    # Ahora aplicamos el split de forma segura
+                    df_raw['Artikelnummern'] = df_raw['Artikelnummern'].apply(
                         lambda x: [sku.strip() for sku in x.split(',')] if ',' in x else [x]
                     )
                     
-                    # Explode konvertiert die Listen in separate Zeilen und klont die Geometrie (cm²) automatisch!
+                    # Explode convierte las listas en filas independientes clonando la geometría
                     df_preview = df_raw.explode('Artikelnummern').reset_index(drop=True)
                     
-                    # Duplikate entfernen, die durch fehlerhafte Mehrfachauslesungen im selben Block entstanden sind
+                    # Limpiamos espacios en blanco residuales y eliminamos filas vacías accidentales
+                    df_preview['Artikelnummern'] = df_preview['Artikelnummern'].str.strip()
+                    df_preview = df_preview[df_preview['Artikelnummern'] != ""]
+                    
+                    # Eliminar duplicados exactos generados por lecturas repetidas en el mismo bloque
                     df_preview = df_preview.drop_duplicates(subset=['Artikelnummern', 'Katalogseite-Fokus', 'Clip-Fläche (cm²)'])
-                    
-                    # Bereinigung: Falls Varianten-Labels ebenfalls komprimiert waren, ordnen wir sie sauber zu
-                    # Wenn z.B. 2 Artikel im Block sind, teilen wir die Fläche durch 2 (Prorrateo)
-                    # (Optional: Kann auskommentiert werden, falls die volle Blockfläche pro Zeile stehen bleiben soll)
-                    # df_preview['Clip-Fläche (cm²)'] = df_preview.groupby(['Katalogseite-Fokus', 'Bild'])['Clip-Fläche (cm²)'].transform(lambda x: x / len(x))
-                    
                     # =========================================================================
 
                     # Asegurar que las columnas métricas clave sean tratadas como números flotantes antes de renderizar
@@ -1199,6 +1200,7 @@ def main_web():
                     for spalte in numerische_spalten:
                         if spalte in df_preview.columns:
                             df_preview[spalte] = pd.to_numeric(df_preview[spalte], errors='coerce')
+
                     
                     # MOSTRAR LA TABLA INTERACTIVA ACTUALIZADA AL ESTÁNDAR STREAMLIT ACTUAL
                     st.dataframe(
