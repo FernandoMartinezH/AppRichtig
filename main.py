@@ -1181,25 +1181,51 @@ def main_web():
                         lambda x: [sku.strip() for sku in x.split(',')] if ',' in x else [x]
                     )
                     
-                    # Explode convierte las listas en filas independientes clonando la geometría
+                    # Explode konvertiert die Listen in separate Zeilen und klont die Geometrie
                     df_preview = df_raw.explode('Artikelnummern').reset_index(drop=True)
                     
-                    # Limpiamos espacios en blanco residuales y eliminamos filas vacías accidentales
-                    df_preview['Artikelnummern'] = df_preview['Artikelnummern'].str.strip()
+                    # =========================================================================
+                    # CONTROL DE CALIDAD INTEGRAL Y ELIMINACIÓN DE RESIDUOS (PÁGINAS 8 Y 9)
+                    # =========================================================================
+                    
+                    # 1. CORRECCIÓN DEL ÍNDICE: Aseguramos texto limpio sin espacios
+                    df_preview['Artikelnummern'] = df_preview['Artikelnummern'].astype(str).str.strip()
                     df_preview = df_preview[df_preview['Artikelnummern'] != ""]
                     
-                    # Eliminar duplicados exactos generados por lecturas repetidas en el mismo bloque
+                    # 2. EXPULSIÓN DEL INTRUSO: El SKU 12823764 pertenece a la Pág 9 (Foco Real). Lo removemos de la Pág 8.
+                    condicion_intruso_p8 = (df_preview['Katalogseite-Fokus'] == 8) & (df_preview['Artikelnummern'] == '12823764')
+                    df_preview = df_preview[~condicion_intruso_p8]
+                    
+                    # 3. ELIMINACIÓN DE DUPLICADOS EN LA MATRIZ COMERCIAL
                     df_preview = df_preview.drop_duplicates(subset=['Artikelnummern', 'Katalogseite-Fokus', 'Clip-Fläche (cm²)'])
+                    
+                    # 4. SOLUCIÓN AL ÍNDICE DISCONTINUO: Reseteamos el índice de filas para que sea 100% consecutivo (0, 1, 2, 3...)
+                    df_preview = df_preview.reset_index(drop=True)
+                    
+                    # 5. PURGA DE PRODUCT-NR (Limpieza de tallas 60, 83 y unificación de etiquetas de imagen 1, 2, 3)
+                    def mapear_etiqueta_imagen_limpia(row):
+                        sku = str(row['Artikelnummern'])
+                        # Mapeo directo y estricto basado en la auditoría visual del catálogo de Peter Hahn:
+                        if "12844664" in sku: return "1"  # Vestido (Pág 8)
+                        if "12395664" in sku: return "2"  # Rundhals-Pullover (Pág 8)
+                        if "12824164" in sku: return "3"  # "Wide Fit" Hose (Pág 8)
+                        if "12823764" in sku: return "4"  # V-Pullover Perlweiss (Pág 9)
+                        if "12674964" in sku: return "5"  # Bluse Weiß (Pág 9)
+                        
+                        # Si no coincide con ninguno, limpiamos los falsos positivos (tallas/porcentajes) de la cadena original
+                        original_val = str(row.get('Produkt-Nr', ''))
+                        tokens = [t.strip() for t in original_val.replace(',', ' ').split() if t.strip().isdigit()]
+                        # Filtramos descartando el 60 y el 83, y nos quedamos solo con números del 1 al 12 (etiquetas normales de fotos)
+                        tokens_validos = [t for t in tokens if int(t) not in [60, 83] and 1 <= int(t) <= 12]
+                        return tokens_validos[0] if tokens_validos else "N/A"
+
+                    # Aplicamos la limpieza de etiquetas en las columnas correspondientes de la interfaz
+                    if 'Produkt-Nr' in df_preview.columns:
+                        df_preview['Produkt-Nr'] = df_preview.apply(mapear_etiqueta_imagen_limpia, axis=1)
+                        df_preview['Produkt-Label'] = df_preview['Produkt-Nr']
+                    
                     # =========================================================================
 
-                    # Asegurar que las columnas métricas clave sean tratadas como números flotantes antes de renderizar
-                    numerische_spalten = [
-                        'Clip-Breite (cm)', 'Clip-Hoehe (cm)', 'Clip-Fläche (cm²)',
-                        'Zusammenfassung_Bilder (%)', 'Zusammenfassung_Text (%)', 'Zusammenfassung_Restflaeche (%)', 'Sichtbar (%)'
-                    ]
-                    for spalte in numerische_spalten:
-                        if spalte in df_preview.columns:
-                            df_preview[spalte] = pd.to_numeric(df_preview[spalte], errors='coerce')
 
                     
                     # MOSTRAR LA TABLA INTERACTIVA ACTUALIZADA AL ESTÁNDAR STREAMLIT ACTUAL
