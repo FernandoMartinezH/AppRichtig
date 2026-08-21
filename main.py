@@ -243,9 +243,13 @@ def collect_label_spans(spans):
 
 
 def extract_product_blocks(page):
-    """Verarbeitet Textblöcke zur präzisen Erfassung ALLER Artikelnummern und Text-Snapshots (Multi-Artikel)."""
+    """
+    Verarbeitet Textblöcke zur präzisen Erfassung ALLER Artikelnummern.
+    SISTEMA DE PLANIFICACIÓN ROBUSTA: Ahora aplana los resultados devolviendo 
+    un bloque individual independiente por cada artículo/SKU detectado (Una fila por SKU).
+    """
     blocks = page.get_text("dict")["blocks"]
-    products = []
+    raw_products = []  # Almacenamiento temporal de bloques densos
     page_area = page.rect.width * page.rect.height
 
     for b in blocks:
@@ -270,7 +274,6 @@ def extract_product_blocks(page):
             letter = m.group(3)
             variant_map[art] = letter
 
-
         # SYSTEM-UPGRADE: Findet ALLE Produkt-Ziffern im Textblock (Multi-Artikel-Unterstützung)
         prod_nums_found = []
         all_tokens = text.strip().split()
@@ -287,18 +290,60 @@ def extract_product_blocks(page):
         words = text.strip().split()
         preview_text = " ".join(words[:6]) if words else ""
 
-        products.append({
+        # Guardamos el bloque en bruto
+        raw_products.append({
             "rect": r,
             "text": text,
             "text_completo": text.strip(),
             "articles": articles_all,
             "variant_map": variant_map,
-            "prod_nums": prod_nums_found,  # Upgrade: Liste statt einzelnem Integer
-            "prod_num": prod_nums_found[0] if prod_nums_found else None, # Abwärtskompatibilität
+            "prod_nums": prod_nums_found,
             "preview": preview_text,
             "text_block_pct": text_block_pct 
         })
-    return products
+
+    # =========================================================================
+    # ESTRELLA DEL SPRINT: PROCESO DE APLANAMIENTO (FLATTENING) PARA DYNAMICS 365
+    # =========================================================================
+    flattened_products = []
+    
+    for block in raw_products:
+        skus_encontrados = block["articles"] # Usamos tus artículos comerciales detectados
+        
+        # Si por alguna razón el bloque no tiene SKUs (Contingencia Dummies)
+        if not skus_encontrados:
+            fila_dummy = block.copy()
+            fila_dummy["article_individual"] = "N/A"
+            fila_dummy["prod_num_individual"] = block["prod_nums"][0] if block["prod_nums"] else None
+            flattened_products.append(fila_dummy)
+            continue
+            
+        # Para cada artículo comercial en este mismo bloque de texto/imagen
+        for idx, sku in enumerate(skus_encontrados):
+            # Clonamos el bloque geométrico para no pisar memoria
+            fila_sku = block.copy()
+            
+            # Asignamos el identificador único de esta fila
+            fila_sku["article_individual"] = sku 
+            
+            # Asignamos su código numérico de imagen correspondiente (si existe un mapeo indexado)
+            if idx < len(block["prod_nums"]):
+                fila_sku["prod_num_individual"] = block["prod_nums"][idx]
+            else:
+                fila_sku["prod_num_individual"] = block["prod_nums"][0] if block["prod_nums"] else None
+                
+            # REGLA DE NEGOCIO: Prorrateamos el porcentaje de ocupación espacial de la página
+            # Dividimos el peso de la celda entre la cantidad de SKUs que comparten la foto
+            num_articulos = len(skus_encontrados)
+            fila_sku["text_block_pct"] = round(block["text_block_pct"] / num_articulos, 2)
+            
+            # Mantenemos las listas originales vivas por si otra función del pipeline las requiere
+            fila_sku["prod_num"] = fila_sku["prod_num_individual"]
+            
+            flattened_products.append(fila_sku)
+            
+    return flattened_products
+
 
 
 
