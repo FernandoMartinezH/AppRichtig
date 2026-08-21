@@ -1161,8 +1161,6 @@ def main_web():
                 "📈 Effizienz- & Impact-Analyse"
             ])
         
-            
-
             with tab_prozess:
                 if os.path.exists(unified_path):
                     st.write("---")
@@ -1170,8 +1168,29 @@ def main_web():
                     st.write("Bitte die generierten Zeilen und Spalten vor dem Download überprüfen:")
                     
                     # 1. LEER EL CSV ORIGINAL (Contiene los números puros)
-                    df_preview = pd.read_csv(unified_path, sep=";", encoding="utf-8-sig")
+                    df_raw = pd.read_csv(unified_path, sep=";", encoding="utf-8-sig")
                     
+                    # =========================================================================
+                    # SYSTEM-UPGRADE: ZEILEN-REFACTORING (1 ZEILE = 1 SKU) FÜR DYNAMICS 365
+                    # =========================================================================
+                    # Falls "Artikelnummern" mehrere SKUs mit Komma enthält, splitten wir sie in Listen
+                    df_raw['Artikelnummern'] = df_raw['Artikelnummern'].astype(str).apply(
+                        lambda x: [sku.strip() for sku in x.split(',')] if ',' in x else [x]
+                    )
+                    
+                    # Explode konvertiert die Listen in separate Zeilen und klont die Geometrie (cm²) automatisch!
+                    df_preview = df_raw.explode('Artikelnummern').reset_index(drop=True)
+                    
+                    # Duplikate entfernen, die durch fehlerhafte Mehrfachauslesungen im selben Block entstanden sind
+                    df_preview = df_preview.drop_duplicates(subset=['Artikelnummern', 'Katalogseite-Fokus', 'Clip-Fläche (cm²)'])
+                    
+                    # Bereinigung: Falls Varianten-Labels ebenfalls komprimiert waren, ordnen wir sie sauber zu
+                    # Wenn z.B. 2 Artikel im Block sind, teilen wir die Fläche durch 2 (Prorrateo)
+                    # (Optional: Kann auskommentiert werden, falls die volle Blockfläche pro Zeile stehen bleiben soll)
+                    # df_preview['Clip-Fläche (cm²)'] = df_preview.groupby(['Katalogseite-Fokus', 'Bild'])['Clip-Fläche (cm²)'].transform(lambda x: x / len(x))
+                    
+                    # =========================================================================
+
                     # Asegurar que las columnas métricas clave sean tratadas como números flotantes antes de renderizar
                     numerische_spalten = [
                         'Clip-Breite (cm)', 'Clip-Hoehe (cm)', 'Clip-Fläche (cm²)',
@@ -1181,10 +1200,7 @@ def main_web():
                         if spalte in df_preview.columns:
                             df_preview[spalte] = pd.to_numeric(df_preview[spalte], errors='coerce')
                     
-                    # MOSTRAR LA TABLA INTERACTIVA CORREGIDA (Sin prefijo "de:")
-                                        # MOSTRAR LA TABLA INTERACTIVA ACTUALIZADA AL ESTÁNDAR STREAMLIT ACTUAL
-                                        # PASO 1 CORREGIDO: Configuración visual simplificada para el usuario en la App
-                                        # STEP 1 REALIGNMENT: STRATEGISCHE ANPASSUNG AN DIE NEUE KAUFMÄNNISCHE SPALTENSTRUKTUR
+                    # MOSTRAR LA TABLA INTERACTIVA ACTUALIZADA AL ESTÁNDAR STREAMLIT ACTUAL
                     st.dataframe(
                         df_preview, 
                         column_config={
@@ -1209,36 +1225,31 @@ def main_web():
                         },
                         width="stretch"  
                     )
-
+                    
                     st.write("---")
                     
                     # 2. DER GESCHÜTZTE EXCEL-KLON WIRD GENERIERT (SYSTEMINTEGRITÄT FÜR EUROPA-DE)
                     df_excel = df_preview.copy()
                     
-                    # Aktualisierte Matrix kritischer Spalten zur permanenten Unterdrückung von Excel-Datumsfehlern
-                    problematic_cols = [
-                        'Clip-Breite (cm)', 'Clip-Hoehe (cm)', 'Clip-Fläche (cm²)', 
-                        'Farbe', 'Auf Seite (%)', 'Sichtbar (%)', 'Auf S.Links (%)', 
-                        'Auf S.Links (%) Sichtbar', 'Auf S.Rechts (%)', 'Auf S.Rechts (%) Sichtbar',
-                        'Textblock_Flaeche (%)'
-                    ]
-
-                        
-                    for col in problematic_cols:
-                        if col in df_excel.columns:
-                            df_excel[col] = df_excel[col].apply(lambda x: f'="{x}"' if pd.notnull(x) else x)
+                    # Schutz vor automatischer Excel-Datumsformatierung in Europa (de-DE)
+                    # Wir fügen ein echtes Text-Apostroph vor die SKU, falls es rein numerisch ist
+                    df_excel['Artikelnummern'] = df_excel['Artikelnummern'].apply(lambda x: f"'{x}" if str(x).isdigit() else x)
                     
-                    # Sobreescribimos el archivo temporal en el servidor para el botón de descarga
-                    df_excel.to_csv(unified_path, sep=";", encoding="utf-8-sig", index=False)
+                    # Konvertierung in einen sauberen Byte-Stream für den Download-Button (ohne Server-Datei-Überschreibung!)
+                    csv_buffer = df_excel.to_csv(sep=";", encoding="utf-8-sig", index=False)
                 
-                # El botón de descarga lee el archivo protegido para Excel
-                with open(unified_path, "rb") as file:
-                    st.download_button(
-                        label="CSV-Datei herunterladen",
-                        data=file,
-                        file_name=f"{uploaded_file.name.replace('.pdf', '')}_Unifiziert.csv",
-                        mime="text/csv"
-                    )
+                # El botón de descarga lee el archivo protegido para Excel directamente de la memoria caché
+                st.download_button(
+                    label="CSV-Datei herunterladen",
+                    data=csv_buffer,
+                    file_name=f"{uploaded_file.name.replace('.pdf', '')}_Unifiziert.csv",
+                    mime="text/csv"
+                )
+        except Exception as e:
+            st.error(f"Fehler bei der Verarbeitung der Datei: {str(e)}")
+
+# Hinweis: Füge am Ende deines Skripts bei Bedarf noch die tab_bewertung Logik an.
+
 
 
 
