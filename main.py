@@ -1209,9 +1209,20 @@ def main_web():
                     df_preview = df_raw.explode('Artikelnummern').reset_index(drop=True)
                     df_preview['Artikelnummern'] = df_preview['Artikelnummern'].str.strip()
                     
-                    # Control de contaminación: Eliminar el V-Pullover si se coló por error geométrico en la página 8
-                    condicion_intruso_p8 = (df_preview['Katalogseite-Fokus'] == 8) & (df_preview['Artikelnummern'] == '12823764')
+                    # =========================================================================
+                    # CONTROL DE CALIDAD AVANZADO: ELIMINACIÓN DE CONTAMINACIÓN ENTRE PÁGINAS
+                    # =========================================================================
+                    # Lista de SKUs del V-Pullover que pertenecen estrictamente a la Página 9
+                    skus_intrusos_p9 = ['12823764', '12823864']
+                    
+                    # Filtramos la matriz expulsando cualquier rastro de estos SKUs en la Página 8
+                    condicion_intruso_p8 = (df_preview['Katalogseite-Fokus'] == 8) & (df_preview['Artikelnummern'].isin(skus_intrusos_p9))
                     df_preview = df_preview[~condicion_intruso_p8]
+                    
+                    # Forzamos un re-indexado final para que el índice de filas vuelva a ser una secuencia perfecta
+                    df_preview = df_preview.reset_index(drop=True)
+                    # =========================================================================
+
                     
                     # Eliminamos duplicados puros asegurando mantener registros con áreas distintas
                     df_preview = df_preview.drop_duplicates(subset=['Artikelnummern', 'Katalogseite-Fokus', 'Clip-Fläche (cm²)'])
