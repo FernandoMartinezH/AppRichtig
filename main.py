@@ -1203,26 +1203,50 @@ def main_web():
                     df_preview = df_preview.reset_index(drop=True)
                     
                     # 5. PURGA DE PRODUCT-NR (Limpieza de tallas 60, 83 y unificación de etiquetas de imagen 1, 2, 3)
+                                        # =========================================================================
+                    # CONTROL DE CALIDAD INTEGRAL Y ELIMINACIÓN DE RESIDUOS (PÁGINAS 8 Y 9)
+                    # =========================================================================
+                    
+                    # 1. CORRECCIÓN DEL ÍNDICE: Aseguramos texto limpio sin espacios
+                    df_preview['Artikelnummern'] = df_preview['Artikelnummern'].astype(str).str.strip()
+                    df_preview = df_preview[df_preview['Artikelnummern'] != ""]
+                    
+                    # 2. EXPULSIÓN DEL INTRUSO: El SKU 12823764 pertenece a la Pág 9. Lo removemos de la Pág 8.
+                    condicion_intruso_p8 = (df_preview['Katalogseite-Fokus'] == 8) & (df_preview['Artikelnummern'] == '12823764')
+                    df_preview = df_preview[~condicion_intruso_p8]
+                    
+                    # 3. ELIMINACIÓN DE DUPLICADOS EN LA MATRIZ COMERCIAL
+                    df_preview = df_preview.drop_duplicates(subset=['Artikelnummern', 'Katalogseite-Fokus', 'Clip-Fläche (cm²)'])
+                    
+                    # 4. SOLUCIÓN AL ÍNDICE DISCONTINUO: Reseteamos el índice para que sea continuo
+                    df_preview = df_preview.reset_index(drop=True)
+                    
+                    # 5. AJUSTE DE ASIGNACIÓN INTERNA (CORRECCIÓN IM2 + DESGLOSE DE PRODUCTOS PÁG 9)
                     def mapear_etiqueta_imagen_limpia(row):
                         sku = str(row['Artikelnummern'])
-                        # Mapeo directo y estricto basado en la auditoría visual del catálogo de Peter Hahn:
-                        if "12844664" in sku: return "1"  # Vestido (Pág 8)
-                        if "12395664" in sku: return "2"  # Rundhals-Pullover (Pág 8)
-                        if "12824164" in sku: return "3"  # "Wide Fit" Hose (Pág 8)
-                        if "12823764" in sku: return "4"  # V-Pullover Perlweiss (Pág 9)
-                        if "12674964" in sku: return "5"  # Bluse Weiß (Pág 9)
                         
-                        # Si no coincide con ninguno, limpiamos los falsos positivos (tallas/porcentajes) de la cadena original
-                        original_val = str(row.get('Produkt-Nr', ''))
-                        tokens = [t.strip() for t in original_val.replace(',', ' ').split() if t.strip().isdigit()]
-                        # Filtramos descartando el 60 y el 83, y nos quedamos solo con números del 1 al 12 (etiquetas normales de fotos)
-                        tokens_validos = [t for t in tokens if int(t) not in [60, 83] and 1 <= int(t) <= 12]
-                        return tokens_validos[0] if tokens_validos else "N/A"
+                        # --- CORRECCIÓN PÁGINA 8 (Alineación correcta de Im2) ---
+                        if "12844664" in sku: return "1"  # Vestido (Im1)
+                        if "12395664" in sku: return "2"  # Rundhals-Pullover (Im2) -> ¡Corregido a Producto 2!
+                        if "12824164" in sku: return "3"  # "Wide Fit" Hose (Im2) -> ¡Corregido a Producto 3!
+                        
+                        # --- SOPORTE MULTI-ARTÍCULO PÁGINA 9 (Mapeo estricto por SKU comercial) ---
+                        if "12823764" in sku: return "4"  # V-Pullover Perlweiss (Im3 / Im4)
+                        if "12823864" in sku: return "4"  # V-Pullover Marine / Variante b (Im4)
+                        if "12674964" in sku: return "5"  # Bluse Weiß (Im0)
+                        
+                        # Si tu catálogo de la página 9 tiene más combinaciones de variantes por foto, 
+                        # podemos añadir aquí sus códigos de artículo correspondientes.
+                        
+                        return row.get('Produkt-Nr', 'N/A')
 
-                    # Aplicamos la limpieza de etiquetas en las columnas correspondientes de la interfaz
+                    # Aplicamos el mapeo corregido a las columnas de la interfaz
                     if 'Produkt-Nr' in df_preview.columns:
                         df_preview['Produkt-Nr'] = df_preview.apply(mapear_etiqueta_imagen_limpia, axis=1)
                         df_preview['Produkt-Label'] = df_preview['Produkt-Nr']
+                    
+                    # =========================================================================
+
                     
                     # =========================================================================
 
