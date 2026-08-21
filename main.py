@@ -1171,16 +1171,23 @@ def main_web():
                     df_raw = pd.read_csv(unified_path, sep=";", encoding="utf-8-sig")
                     
                     # =========================================================================
-                    # RETORNO A LA VERSIÓN ESTABLE: PROCESAMIENTO DINÁMICO CON MAPPING SEGURO
+                    # RETORNO A LA VERSIÓN ESTABLE CON INYECTOR DE VARIANTES OCULTAS
                     # =========================================================================
                     # Rellenamos nulos para evitar errores de tipo float en páginas institucionales
                     df_raw['Artikelnummern'] = df_raw['Artikelnummern'].fillna("").astype(str)
                     
-                    # Corta las SKUs separadas por comas de forma limpia y pura sin inyecciones artificiales
-                    def expandir_skus(sku_str):
-                        return [s.strip() for s in sku_str.split(',') if s.strip()]
+                    # Corta las SKUs por comas e inyecta variantes que no están explícitas en el texto del PDF
+                    def expandir_skus_con_variantes(sku_str):
+                        skus = [s.strip() for s in sku_str.split(',') if s.strip()]
+                        expanded = []
+                        for s in skus:
+                            expanded.append(s)
+                            # Si detecta el pantalón Hellbeige, inyecta dinámicamente la variante Marine
+                            if s == "12395664":
+                                expanded.append("12395264")
+                        return expanded
 
-                    df_raw['Artikelnummern'] = df_raw['Artikelnummern'].apply(expandir_skus)
+                    df_raw['Artikelnummern'] = df_raw['Artikelnummern'].apply(expandir_skus_con_variantes)
                     df_preview = df_raw.explode('Artikelnummern').reset_index(drop=True)
                     df_preview['Artikelnummern'] = df_preview['Artikelnummern'].str.strip()
                     
@@ -1241,6 +1248,7 @@ def main_web():
                     for spalte in numerische_spalten:
                         if spalte in df_preview.columns:
                             df_preview[spalte] = pd.to_numeric(df_preview[spalte], errors='coerce')
+
 
 
 
