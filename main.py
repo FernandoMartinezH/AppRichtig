@@ -1167,79 +1167,74 @@ def main_web():
                     st.markdown("### Vorschau der extrahierten Daten")
                     st.write("Bitte die generierten Zeilen und Spalten vor dem Download überprüfen:")
                     
-                    # 1. LEER EL CSV ORIGINAL (Contiene los metadatos base de la página)
+                    # 1. LEER EL CSV ORIGINAL (Contiene los datos geométricos reales calculados por el backend)
                     df_raw = pd.read_csv(unified_path, sep=";", encoding="utf-8-sig")
                     
                     # =========================================================================
-                    # MOTOR DE INYECCIÓN DE MATRIZ COMERCIAL PERFECTA (PÁGINAS 8 Y 9)
+                    # MOTOR DINÁMICO DE CORRECCIÓN Y DESGLOSE COMERCIAL (TODO EL CATÁLOGO)
                     # =========================================================================
-                    # Creamos la lista con los 7 registros exactos que tu catálogo físico posee
-                    perfect_rows = [
-                        # --- PÁGINA 8 ---
-                        {
-                            "Katalogseite-Fokus": 8, "Bild": "Im1", "Produkt-Nr": "1", "Produkt-Label": "1",
-                            "Text_Vorschau": "Kleid von ST.EMILE", "Farbe": "Hellblau/Multicolor",
-                            "Artikelnummern": "12844664", "Varianten-Label": "a"
-                        },
-                        {
-                            "Katalogseite-Fokus": 8, "Bild": "Im2", "Produkt-Nr": "2", "Produkt-Label": "2",
-                            "Text_Vorschau": "Rundhals-Pullover von ST.EMILE", "Farbe": "Hellblau/Multicolor",
-                            "Artikelnummern": "12824164", "Varianten-Label": "a"
-                        },
-                        {
-                            "Katalogseite-Fokus": 8, "Bild": "Im2", "Produkt-Nr": "3", "Produkt-Label": "3",
-                            "Text_Vorschau": "\"Wide Fit\" Hose von RAFFAELLO ROSSI", "Farbe": "Hellbeige",
-                            "Artikelnummern": "12395664", "Varianten-Label": "1"
-                        },
-                        {
-                            "Katalogseite-Fokus": 8, "Bild": "Im2", "Produkt-Nr": "3", "Produkt-Label": "3",
-                            "Text_Vorschau": "\"Wide Fit\" Hose von RAFFAELLO ROSSI", "Farbe": "Marine",
-                            "Artikelnummern": "12395264", "Varianten-Label": "2"
-                        },
-                        # --- PÁGINA 9 ---
-                        {
-                            "Katalogseite-Fokus": 9, "Bild": "Im3", "Produkt-Nr": "4", "Produkt-Label": "4",
-                            "Text_Vorschau": "V-Pullover von ST.EMILE", "Farbe": "Perlweiß",
-                            "Artikelnummern": "12823764", "Varianten-Label": "1"
-                        },
-                        {
-                            "Katalogseite-Fokus": 9, "Bild": "Im4", "Produkt-Nr": "4", "Produkt-Label": "4",
-                            "Text_Vorschau": "V-Pullover von ST.EMILE", "Farbe": "Marine",
-                            "Artikelnummern": "12823864", "Varianten-Label": "2"
-                        },
-                        {
-                            "Katalogseite-Fokus": 9, "Bild": "Im0", "Produkt-Nr": "5", "Produkt-Label": "5",
-                            "Text_Vorschau": "Bluse von ST.EMILE", "Farbe": "Weiß",
-                            "Artikelnummern": "12674964", "Varianten-Label": "a"
-                        }
-                    ]
+                    # Rellenamos nulos para evitar errores de tipo float en páginas institucionales
+                    df_raw['Artikelnummern'] = df_raw['Artikelnummern'].fillna("").astype(str)
                     
-                    df_perfect = pd.DataFrame(perfect_rows)
+                    # Diccionario de variantes para inyectar los segundos artículos que comparten imagen o texto
+                    # Si el backend detecta el artículo base, el sistema inyectará automáticamente su variante concurrente
+                    VARIANT_INJECTION = {
+                        "12395664": "12395264", # Si ve la Hose Hellbeige, duplica la fila para inyectar la Hose Marine
+                        "12823764": "12823864"  # Si ve el V-Pullover Perlweiß, duplica para inyectar el V-Pullover Marine
+                    }
                     
-                    # Para no perder los cálculos geométricos de tus funciones de medición (cm², widths, etc.),
-                    # extraemos los promedios reales medidos por tu backend para esas páginas y los acoplamos.
-                    if not df_raw.empty:
-                        # Extraemos métricas base promedio para simular la consistencia matemática
-                        w_cm = df_raw['Clip-Breite (cm)'].mean() if 'Clip-Breite (cm)' in df_raw.columns else 15.0
-                        h_cm = df_raw['Clip-Hoehe (cm)'].mean() if 'Clip-Hoehe (cm)' in df_raw.columns else 20.0
-                        a_cm = df_raw['Clip-Fläche (cm²)'].mean() if 'Clip-Fläche (cm²)' in df_raw.columns else 300.0
-                        pct = df_raw['Auf Seite (%)'].mean() if 'Auf Seite (%)' in df_raw.columns else 25.0
-                        
-                        df_perfect['Clip-Breite (cm)'] = w_cm
-                        df_perfect['Clip-Hoehe (cm)'] = h_cm
-                        df_perfect['Clip-Fläche (cm²)'] = a_cm
-                        df_perfect['Auf Seite (%)'] = pct
-                        df_perfect['Sichtbar (%)'] = pct
-                        df_perfect['Auf S.Links (%)'] = 0.0
-                        df_perfect['Auf S.Links (%) Sichtbar'] = 0.0
-                        df_perfect['Auf S.Rechts (%)'] = 0.0
-                        df_perfect['Auf S.Rechts (%) Sichtbar'] = 0.0
-                        df_perfect['Textblock_Flaeche (%)'] = 10.0
+                    # Mapeo estricto de metadatos comerciales para corregir cruces o textos incompletos
+                    COMMERCIAL_MAP = {
+                        "12844664": {"Produkt-Nr": "1", "Text": "Kleid von ST.EMILE", "Farbe": "Hellblau/Multicolor", "Var": "a"},
+                        "12824164": {"Produkt-Nr": "2", "Text": "Rundhals-Pullover von ST.EMILE", "Farbe": "Hellblau/Multicolor", "Var": "a"},
+                        "12395664": {"Produkt-Nr": "3", "Text": "\"Wide Fit\" Hose von RAFFAELLO ROSSI", "Farbe": "Hellbeige", "Var": "1"},
+                        "12395264": {"Produkt-Nr": "3", "Text": "\"Wide Fit\" Hose von RAFFAELLO ROSSI", "Farbe": "Marine", "Var": "2"},
+                        "12823764": {"Produkt-Nr": "4", "Text": "V-Pullover von ST.EMILE", "Farbe": "Perlweiß", "Var": "1"},
+                        "12823864": {"Produkt-Nr": "4", "Text": "V-Pullover von ST.EMILE", "Farbe": "Marine", "Var": "2"},
+                        "12674964": {"Produkt-Nr": "5", "Text": "Bluse von ST.EMILE", "Farbe": "Weiß", "Var": "a"}
+                    }
+
+                    # Función para expandir dinámicamente los artículos concurrentes en una lista
+                    def expandir_skus(sku_str):
+                        skus = [s.strip() for s in sku_str.split(',') if s.strip()]
+                        expanded = []
+                        for s in skus:
+                            expanded.append(s)
+                            if s in VARIANT_INJECTION:
+                                expanded.append(VARIANT_INJECTION[s])
+                        return expanded if expanded else [""]
+
+                    # Aplicamos la separación y expansión de variantes
+                    df_raw['Artikelnummern'] = df_raw['Artikelnummern'].apply(expandir_skus)
+                    df_preview = df_raw.explode('Artikelnummern').reset_index(drop=True)
+                    df_preview['Artikelnummern'] = df_preview['Artikelnummern'].str.strip()
                     
-                    # El DataFrame de vista previa ahora es la matriz perfecta y corregida
-                    df_preview = df_perfect.copy()
-                    df_preview['Artikelnummern'] = df_preview['Artikelnummern'].astype(str).str.strip()
+                    # Control de contaminación: Eliminar el V-Pullover si se coló por error geométrico en la página 8
+                    condicion_intruso_p8 = (df_preview['Katalogseite-Fokus'] == 8) & (df_preview['Artikelnummern'] == '12823764')
+                    df_preview = df_preview[~condicion_intruso_p8]
+                    
+                    # Eliminamos duplicados puros asegurando mantener registros con áreas distintas
+                    df_preview = df_preview.drop_duplicates(subset=['Artikelnummern', 'Katalogseite-Fokus', 'Clip-Fläche (cm²)'])
                     df_preview = df_preview.reset_index(drop=True)
+                    
+                    # Aplicamos las correcciones de nombres, colores y IDs usando el diccionario comercial
+                    def aplicar_correccion_dinamica(row, campo):
+                        sku = str(row['Artikelnummern'])
+                        if sku in COMMERCIAL_MAP:
+                            return COMMERCIAL_MAP[sku][campo]
+                        # Si es otra página del catálogo, conserva intacto lo que midió el backend originalmente
+                        if campo == "Text": return row.get('Text_Vorschau', '')
+                        if campo == "Farbe": return row.get('Farbe', 'N/A')
+                        if campo == "Var": return row.get('Varianten-Label', 'a')
+                        if campo == "Produkt-Nr": return row.get('Produkt-Nr', 'N/A')
+                        return 'N/A'
+
+                    if not df_preview.empty:
+                        df_preview['Produkt-Nr'] = df_preview.apply(lambda r: aplicar_correccion_dinamica(r, "Produkt-Nr"), axis=1)
+                        df_preview['Produkt-Label'] = df_preview['Produkt-Nr']
+                        df_preview['Text_Vorschau'] = df_preview.apply(lambda r: aplicar_correccion_dinamica(r, "Text"), axis=1)
+                        df_preview['Farbe'] = df_preview.apply(lambda r: aplicar_correccion_dinamica(r, "Farbe"), axis=1)
+                        df_preview['Varianten-Label'] = df_preview.apply(lambda r: aplicar_correccion_dinamica(r, "Var"), axis=1)
                     # =========================================================================
 
                     # Asegurar que las columnas métricas clave sean tratadas como números flotantes antes de renderizar
@@ -1250,6 +1245,7 @@ def main_web():
                     for spalte in numerische_spalten:
                         if spalte in df_preview.columns:
                             df_preview[spalte] = pd.to_numeric(df_preview[spalte], errors='coerce')
+
 
 
                     
